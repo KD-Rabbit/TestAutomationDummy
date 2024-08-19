@@ -1,24 +1,44 @@
-import { Page, expect } from "@playwright/test";
+import {expect} from '@playwright/test'
+import {elements} from './element.ts'
+import {data} from '../fixtures/data.ts'
 
-export async function login(page: Page, username: string, password: string) {
-    // Navigate to the login page
-    await page.goto('https://your-website.com/login');
+export class careOSFunction{
+    readonly page 
+    readonly element 
+    readonly data
 
-    // Fill in the username
-    await page.locator('input#identifier').fill(username);
+    constructor(page){
+     this.page = page
+     this.element = new elements()
+     this.data = data
+    }
 
-    // Click the 'Next' button or equivalent to proceed
-    await page.locator('button#next').click();
+    async navigateToCareOS(){
+        await this.page.goto(this.data.link)
+    }
 
-    // Wait for the password field to be visible
-    await page.locator('input#password').waitFor();
+    async login(){
+        await this.navigateToCareOS()
+        await this.page.locator(this.element.usernameInput).fill(this.data.username)
+        await this.page.locator(this.element.passwordInput).fill(this.data.password)
+        await this.page.locator(this.element.loginButton).click()
+    }
 
-    // Fill in the password
-    await page.locator('input#password').fill(password);
+    async logout(){
+        await this.login()
+        await this.page.locator(this.element.username).click()
+        await this.page.locator(this.element.logoutDropdownList).click()
+        await this.page.locator(this.element.dropdownList).click()
+        await this.page.locator(this.element.logoutButton).click()
+    }
 
-    // Click the 'Login' button or equivalent to submit the form
-    await page.locator('button#login').click();
+    async verifyUserName(){
+        await expect(this.page.locator(this.element.username)).toBeVisible()
+    }
 
-    // Optionally, wait for some element that indicates a successful login
-    await expect(page.locator('selector-for-success-indicator')).toBeVisible();
+    async verifyLoginScreen(){
+        await expect(this.page.locator(this.element.usernameLoginScreenText)).toContainText("Username")
+        await expect(this.page.locator(this.element.passwordLoginScreenText)).toContainText("Password")
+    }
+
 }
